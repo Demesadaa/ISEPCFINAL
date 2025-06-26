@@ -8,6 +8,9 @@ import {
   useParams
 } from 'react-router-dom';
 import './App.css';
+import { AuthProvider, useAuth } from './AuthContext';
+import LoginPage from './LoginPage';
+import RegisterPage from './RegisterPage';
 
 // Types
 interface Task {
@@ -101,12 +104,13 @@ function HomePage({ courses, onAddCourse, onDeleteCourse }: { courses: Course[],
   );
 }
 
-function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment, onDeleteAssignment }: {
+function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment, onDeleteAssignment, authFetch }: {
   courses: Course[];
   assignments: Assignment[];
   fetchAll: () => void;
   onAddAssignment: (a: Partial<Assignment>) => void;
   onDeleteAssignment: (id: string) => void;
+  authFetch: (url: string, options?: any) => Promise<Response>;
 }) {
   const { id } = useParams();
   const course = courses.find(c => c.id === id);
@@ -145,6 +149,7 @@ function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment, onDe
           assignment={courseAssignments.find(a => a.id === showPopup)!}
           onClose={() => setShowPopup(null)}
           fetchAll={fetchAll}
+          authFetch={authFetch}
         />
       )}
       {showAssignmentModal && (
@@ -169,10 +174,11 @@ function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment, onDe
   );
 }
 
-function AssignmentPopup({ assignment, onClose, fetchAll }: {
+function AssignmentPopup({ assignment, onClose, fetchAll, authFetch }: {
   assignment: Assignment;
   onClose: () => void;
   fetchAll: () => void;
+  authFetch: (url: string, options?: any) => Promise<Response>;
 }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [notes, setNotes] = useState<AssignmentNote[]>([]);
@@ -181,57 +187,53 @@ function AssignmentPopup({ assignment, onClose, fetchAll }: {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   useEffect(() => {
-    fetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(setTasks);
-    fetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(setNotes);
-    fetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
+    authFetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(data => setTasks(Array.isArray(data) ? data : []));
+    authFetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(data => setNotes(Array.isArray(data) ? data : []));
+    authFetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
   }, [assignment.id]);
   const addTask = async (task: Omit<Task, 'id'>) => {
-    await fetch(`${API}/assignments/${assignment.id}/tasks`, {
+    await authFetch(`${API}/assignments/${assignment.id}/tasks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(task)
     });
-    fetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(setTasks);
-    fetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
+    authFetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(data => setTasks(Array.isArray(data) ? data : []));
+    authFetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
     fetchAll();
     setShowTaskModal(false);
   };
   const addNote = async (note: Omit<AssignmentNote, 'id'>) => {
-    await fetch(`${API}/assignments/${assignment.id}/notes`, {
+    await authFetch(`${API}/assignments/${assignment.id}/notes`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(note)
     });
-    fetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(setNotes);
+    authFetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(data => setNotes(Array.isArray(data) ? data : []));
     setShowNoteModal(false);
   };
   const updateTask = async (taskId: string, updates: Partial<Task>) => {
-    await fetch(`${API}/assignments/${assignment.id}/tasks/${taskId}`, {
+    await authFetch(`${API}/assignments/${assignment.id}/tasks/${taskId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
-    fetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(setTasks);
-    fetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
+    authFetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(data => setTasks(Array.isArray(data) ? data : []));
+    authFetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
     fetchAll();
   };
   const deleteTask = async (taskId: string) => {
-    await fetch(`${API}/assignments/${assignment.id}/tasks/${taskId}`, { method: 'DELETE' });
-    fetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(setTasks);
-    fetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
+    await authFetch(`${API}/assignments/${assignment.id}/tasks/${taskId}`, { method: 'DELETE' });
+    authFetch(`${API}/assignments/${assignment.id}/tasks`).then(r => r.json()).then(data => setTasks(Array.isArray(data) ? data : []));
+    authFetch(`${API}/assignments/${assignment.id}/progress`).then(r => r.json()).then(data => setProgress(data.progress));
     fetchAll();
   };
   const updateNote = async (noteId: string, updates: Partial<AssignmentNote>) => {
-    await fetch(`${API}/assignments/${assignment.id}/notes/${noteId}`, {
+    await authFetch(`${API}/assignments/${assignment.id}/notes/${noteId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
-    fetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(setNotes);
+    authFetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(data => setNotes(Array.isArray(data) ? data : []));
   };
   const deleteNote = async (noteId: string) => {
-    await fetch(`${API}/assignments/${assignment.id}/notes/${noteId}`, { method: 'DELETE' });
-    fetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(setNotes);
+    await authFetch(`${API}/assignments/${assignment.id}/notes/${noteId}`, { method: 'DELETE' });
+    authFetch(`${API}/assignments/${assignment.id}/notes`).then(r => r.json()).then(data => setNotes(Array.isArray(data) ? data : []));
   };
   return (
     <div className="assignment-popup">
@@ -358,7 +360,8 @@ function NoteModal({ onClose, onCreate }: { onClose: () => void; onCreate: (note
   );
 }
 
-function App() {
+function ProtectedApp() {
+  const { token, logout, user } = useAuth();
   // State
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -367,44 +370,63 @@ function App() {
   const safeCourses = Array.isArray(courses) ? courses : [];
   const safeAssignments = Array.isArray(assignments) ? assignments : [];
 
+  // Helper to add JWT to fetch
+  const authFetch = (url: string, options: any = {}) => {
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
   // Fetch data
   const fetchAll = () => {
-    fetch(`${API}/assignments`).then(r => r.json()).then(setAssignments);
-    fetch(`${API}/courses`).then(r => r.json()).then(setCourses);
+    authFetch(`${API}/assignments`).then(r => r.json()).then(setAssignments);
+    authFetch(`${API}/courses`).then(r => r.json()).then(setCourses);
   };
   useEffect(() => {
-    fetchAll();
-  }, []);
+    if (token) fetchAll();
+  }, [token]);
 
   // Add handlers
   const addAssignment = async (a: Partial<Assignment>) => {
-    await fetch(`${API}/assignments`, {
+    await authFetch(`${API}/assignments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(a)
     });
     fetchAll();
   };
   const addCourse = async (name: string) => {
-    await fetch(`${API}/courses`, {
+    await authFetch(`${API}/courses`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
     fetchAll();
   };
   const deleteCourse = async (id: string) => {
-    await fetch(`${API}/courses/${id}`, { method: 'DELETE' });
+    await authFetch(`${API}/courses/${id}`, { method: 'DELETE' });
     fetchAll();
   };
   const deleteAssignment = async (id: string) => {
-    await fetch(`${API}/assignments/${id}`, { method: 'DELETE' });
+    await authFetch(`${API}/assignments/${id}`, { method: 'DELETE' });
     fetchAll();
   };
 
+  if (!token) {
+    window.location.href = '/login';
+    return null;
+  }
+
   return (
-    <Router>
+    <>
       <Navbar />
+      <div style={{ position: 'absolute', top: 16, right: 24 }}>
+        {user && <span style={{ color: '#A084E8', marginRight: 16 }}>Hi, {user}!</span>}
+        <button onClick={logout}>Logout</button>
+      </div>
       <Routes>
         <Route path="/" element={<HomePage courses={safeCourses} onAddCourse={addCourse} onDeleteCourse={deleteCourse} />} />
         <Route
@@ -416,11 +438,26 @@ function App() {
               fetchAll={fetchAll}
               onAddAssignment={addAssignment}
               onDeleteAssignment={deleteAssignment}
+              authFetch={authFetch}
             />
           }
         />
       </Routes>
-    </Router>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/*" element={<ProtectedApp />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

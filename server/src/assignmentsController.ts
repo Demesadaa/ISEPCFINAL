@@ -16,22 +16,25 @@ function writeAssignments(assignments: Assignment[]) {
 }
 
 export const getAssignments: (req: Request, res: Response) => void = (req, res) => {
-  const assignments = readAssignments();
+  const userId = (req as any).userId;
+  const assignments = readAssignments().filter(a => a.userId === userId);
   res.json(assignments);
 };
 
 export const addAssignment: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const assignments = readAssignments();
-  const newAssignment: Assignment = { ...req.body, id: Date.now().toString(), completed: false };
+  const newAssignment: Assignment = { ...req.body, id: Date.now().toString(), completed: false, userId };
   assignments.push(newAssignment);
   writeAssignments(assignments);
   res.status(201).json(newAssignment);
 };
 
 export const updateAssignment: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
   const assignments = readAssignments();
-  const idx = assignments.findIndex(a => a.id === id);
+  const idx = assignments.findIndex(a => a.id === id && a.userId === userId);
   if (idx === -1) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
@@ -42,10 +45,11 @@ export const updateAssignment: (req: Request, res: Response) => void = (req, res
 };
 
 export const deleteAssignment: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
   let assignments = readAssignments();
   const initialLength = assignments.length;
-  assignments = assignments.filter(a => a.id !== id);
+  assignments = assignments.filter(a => !(a.id === id && a.userId === userId));
   if (assignments.length === initialLength) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
@@ -56,27 +60,29 @@ export const deleteAssignment: (req: Request, res: Response) => void = (req, res
 
 // Get tasks for an assignment
 export const getTasks: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
   if (!assignment) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
   }
-  res.json(assignment.tasks || []);
+  res.json(Array.isArray(assignment.tasks) ? assignment.tasks : []);
 };
 
 // Add a task to an assignment
 export const addTask: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
   if (!assignment) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
   }
-  const newTask: Task = { ...req.body, id: Date.now().toString() };
-  assignment.tasks = assignment.tasks || [];
+  const newTask: Task = { ...req.body, id: Date.now().toString(), userId };
+  assignment.tasks = Array.isArray(assignment.tasks) ? assignment.tasks : [];
   assignment.tasks.push(newTask);
   writeAssignments(assignments);
   res.status(201).json(newTask);
@@ -84,14 +90,15 @@ export const addTask: (req: Request, res: Response) => void = (req, res) => {
 
 // Update a task in an assignment
 export const updateTask: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId, taskId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
-  if (!assignment || !assignment.tasks) {
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
+  if (!assignment || !Array.isArray(assignment.tasks)) {
     res.status(404).json({ error: 'Assignment or task not found' });
     return;
   }
-  const idx = assignment.tasks.findIndex(t => t.id === taskId);
+  const idx = assignment.tasks.findIndex(t => t.id === taskId && t.userId === userId);
   if (idx === -1) {
     res.status(404).json({ error: 'Task not found' });
     return;
@@ -103,15 +110,16 @@ export const updateTask: (req: Request, res: Response) => void = (req, res) => {
 
 // Delete a task from an assignment
 export const deleteTask: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId, taskId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
-  if (!assignment || !assignment.tasks) {
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
+  if (!assignment || !Array.isArray(assignment.tasks)) {
     res.status(404).json({ error: 'Assignment or task not found' });
     return;
   }
   const initialLength = assignment.tasks.length;
-  assignment.tasks = assignment.tasks.filter(t => t.id !== taskId);
+  assignment.tasks = assignment.tasks.filter(t => !(t.id === taskId && t.userId === userId));
   if (assignment.tasks.length === initialLength) {
     res.status(404).json({ error: 'Task not found' });
     return;
@@ -122,27 +130,29 @@ export const deleteTask: (req: Request, res: Response) => void = (req, res) => {
 
 // Get notes for an assignment
 export const getAssignmentNotes: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
   if (!assignment) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
   }
-  res.json(assignment.notes || []);
+  res.json(Array.isArray(assignment.notes) ? assignment.notes.filter(n => n.userId === userId) : []);
 };
 
 // Add a note to an assignment
 export const addAssignmentNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
   if (!assignment) {
     res.status(404).json({ error: 'Assignment not found' });
     return;
   }
-  const newNote: AssignmentNote = { ...req.body, id: Date.now().toString() };
-  assignment.notes = assignment.notes || [];
+  const newNote: AssignmentNote = { ...req.body, id: Date.now().toString(), userId };
+  assignment.notes = Array.isArray(assignment.notes) ? assignment.notes : [];
   assignment.notes.push(newNote);
   writeAssignments(assignments);
   res.status(201).json(newNote);
@@ -150,14 +160,15 @@ export const addAssignmentNote: (req: Request, res: Response) => void = (req, re
 
 // Update a note in an assignment
 export const updateAssignmentNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId, noteId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
-  if (!assignment || !assignment.notes) {
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
+  if (!assignment || !Array.isArray(assignment.notes)) {
     res.status(404).json({ error: 'Assignment or note not found' });
     return;
   }
-  const idx = assignment.notes.findIndex(n => n.id === noteId);
+  const idx = assignment.notes.findIndex(n => n.id === noteId && n.userId === userId);
   if (idx === -1) {
     res.status(404).json({ error: 'Note not found' });
     return;
@@ -169,15 +180,16 @@ export const updateAssignmentNote: (req: Request, res: Response) => void = (req,
 
 // Delete a note from an assignment
 export const deleteAssignmentNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId, noteId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
-  if (!assignment || !assignment.notes) {
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
+  if (!assignment || !Array.isArray(assignment.notes)) {
     res.status(404).json({ error: 'Assignment or note not found' });
     return;
   }
   const initialLength = assignment.notes.length;
-  assignment.notes = assignment.notes.filter(n => n.id !== noteId);
+  assignment.notes = assignment.notes.filter(n => !(n.id === noteId && n.userId === userId));
   if (assignment.notes.length === initialLength) {
     res.status(404).json({ error: 'Note not found' });
     return;
@@ -188,14 +200,15 @@ export const deleteAssignmentNote: (req: Request, res: Response) => void = (req,
 
 // Get assignment progress (percentage of tasks done)
 export const getAssignmentProgress: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { assignmentId } = req.params;
   const assignments = readAssignments();
-  const assignment = assignments.find(a => a.id === assignmentId);
-  if (!assignment || !assignment.tasks || assignment.tasks.length === 0) {
+  const assignment = assignments.find(a => a.id === assignmentId && a.userId === userId);
+  if (!assignment || !Array.isArray(assignment.tasks) || assignment.tasks.length === 0) {
     res.json({ progress: 0 });
     return;
   }
-  const doneCount = assignment.tasks.filter(t => t.status === 'done').length;
+  const doneCount = assignment.tasks.filter(t => t.status === 'done' && t.userId === userId).length;
   const progress = Math.round((doneCount / assignment.tasks.length) * 100);
   res.json({ progress });
 }; 

@@ -1,7 +1,14 @@
+export interface User {
+  id: string;
+  username: string;
+  passwordHash: string;
+}
+
 export interface Course {
   id: string;
   name: string;
   color?: string;
+  userId: string;
 }
 
 export interface Task {
@@ -10,12 +17,14 @@ export interface Task {
   description: string;
   difficulty: 'easy' | 'medium' | 'hard';
   status: 'to do' | 'in progress' | 'done' | 'rejected';
+  userId: string;
 }
 
 export interface AssignmentNote {
   id: string;
   headline: string;
   body: string;
+  userId: string;
 }
 
 export interface Assignment {
@@ -30,6 +39,7 @@ export interface Assignment {
   recurring?: string; // e.g., 'weekly', 'monthly'
   tasks?: Task[];
   notes?: AssignmentNote[];
+  userId: string;
 }
 
 export interface Note {
@@ -39,4 +49,5 @@ export interface Note {
   updatedAt?: string;
   tags?: string[];
   resources?: string[]; // URLs or file paths
+  userId: string;
 } 

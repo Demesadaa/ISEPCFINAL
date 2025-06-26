@@ -16,22 +16,25 @@ function writeNotes(notes: Note[]) {
 }
 
 export const getNotes: (req: Request, res: Response) => void = (req, res) => {
-  const notes = readNotes();
+  const userId = (req as any).userId;
+  const notes = readNotes().filter(n => n.userId === userId);
   res.json(notes);
 };
 
 export const addNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const notes = readNotes();
-  const newNote: Note = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString() };
+  const newNote: Note = { ...req.body, id: Date.now().toString(), createdAt: new Date().toISOString(), userId };
   notes.push(newNote);
   writeNotes(notes);
   res.status(201).json(newNote);
 };
 
 export const updateNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
   const notes = readNotes();
-  const idx = notes.findIndex(n => n.id === id);
+  const idx = notes.findIndex(n => n.id === id && n.userId === userId);
   if (idx === -1) {
     res.status(404).json({ error: 'Note not found' });
     return;
@@ -42,10 +45,11 @@ export const updateNote: (req: Request, res: Response) => void = (req, res) => {
 };
 
 export const deleteNote: (req: Request, res: Response) => void = (req, res) => {
+  const userId = (req as any).userId;
   const { id } = req.params;
   let notes = readNotes();
   const initialLength = notes.length;
-  notes = notes.filter(n => n.id !== id);
+  notes = notes.filter(n => !(n.id === id && n.userId === userId));
   if (notes.length === initialLength) {
     res.status(404).json({ error: 'Note not found' });
     return;
