@@ -15,12 +15,12 @@ function writeCourses(courses: Course[]) {
   fs.writeFileSync(DATA_PATH, JSON.stringify(courses, null, 2));
 }
 
-export const getCourses = (req: Request, res: Response) => {
+export const getCourses: (req: Request, res: Response) => void = (req, res) => {
   const courses = readCourses();
   res.json(courses);
 };
 
-export const addCourse = (req: Request, res: Response) => {
+export const addCourse: (req: Request, res: Response) => void = (req, res) => {
   const courses = readCourses();
   const newCourse: Course = { ...req.body, id: Date.now().toString() };
   courses.push(newCourse);
@@ -28,22 +28,28 @@ export const addCourse = (req: Request, res: Response) => {
   res.status(201).json(newCourse);
 };
 
-export const updateCourse = (req: Request, res: Response) => {
+export const updateCourse: (req: Request, res: Response) => void = (req, res) => {
   const { id } = req.params;
   const courses = readCourses();
   const idx = courses.findIndex(c => c.id === id);
-  if (idx === -1) return res.status(404).json({ error: 'Course not found' });
+  if (idx === -1) {
+    res.status(404).json({ error: 'Course not found' });
+    return;
+  }
   courses[idx] = { ...courses[idx], ...req.body };
   writeCourses(courses);
   res.json(courses[idx]);
 };
 
-export const deleteCourse = (req: Request, res: Response) => {
+export const deleteCourse: (req: Request, res: Response) => void = (req, res) => {
   const { id } = req.params;
   let courses = readCourses();
   const initialLength = courses.length;
   courses = courses.filter(c => c.id !== id);
-  if (courses.length === initialLength) return res.status(404).json({ error: 'Course not found' });
+  if (courses.length === initialLength) {
+    res.status(404).json({ error: 'Course not found' });
+    return;
+  }
   writeCourses(courses);
   res.status(204).send();
 }; 
