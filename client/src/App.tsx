@@ -47,7 +47,7 @@ function Navbar() {
   );
 }
 
-function HomePage({ courses, onAddCourse }: { courses: Course[], onAddCourse: (name: string) => void }) {
+function HomePage({ courses, onAddCourse, onDeleteCourse }: { courses: Course[], onAddCourse: (name: string) => void, onDeleteCourse: (id: string) => void }) {
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
   const [newCourse, setNewCourse] = useState('');
@@ -86,8 +86,14 @@ function HomePage({ courses, onAddCourse }: { courses: Course[], onAddCourse: (n
             key={course.id}
             className="course-card"
             onClick={() => navigate(`/course/${course.id}/assignments`)}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            {course.name}
+            <span>{course.name}</span>
+            <button
+              className="delete-btn"
+              title="Delete course"
+              onClick={e => { e.stopPropagation(); onDeleteCourse(course.id); }}
+            >🗑️</button>
           </div>
         ))}
       </div>
@@ -95,11 +101,12 @@ function HomePage({ courses, onAddCourse }: { courses: Course[], onAddCourse: (n
   );
 }
 
-function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment }: {
+function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment, onDeleteAssignment }: {
   courses: Course[];
   assignments: Assignment[];
   fetchAll: () => void;
   onAddAssignment: (a: Partial<Assignment>) => void;
+  onDeleteAssignment: (id: string) => void;
 }) {
   const { id } = useParams();
   const course = courses.find(c => c.id === id);
@@ -117,10 +124,18 @@ function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment }: {
         </div>
         <ul className="organizer-list">
           {courseAssignments.map(a => (
-            <li key={a.id} className="organizer-list-item" onClick={() => setShowPopup(a.id)}>
-              <span>{a.title}</span>
-              <span>{a.deadline}</span>
-              <span>{a.completed ? '✓' : ''}</span>
+            <li
+              key={a.id}
+              className="organizer-list-item"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              onClick={() => setShowPopup(a.id)}
+            >
+              <span style={{ flex: 1 }}>{a.title} <span style={{ color: '#888', fontSize: '0.95em' }}>{a.deadline}</span> {a.completed ? '✓' : ''}</span>
+              <button
+                className="delete-btn"
+                title="Delete assignment"
+                onClick={e => { e.stopPropagation(); onDeleteAssignment(a.id); }}
+              >🗑️</button>
             </li>
           ))}
         </ul>
@@ -133,7 +148,7 @@ function AssignmentsPage({ courses, assignments, fetchAll, onAddAssignment }: {
         />
       )}
       {showAssignmentModal && (
-        <div className="assignment-popup">
+        <div className="side-popup">
           <button className="close-btn" onClick={() => setShowAssignmentModal(false)}>Close</button>
           <h2>Add Assignment</h2>
           <form onSubmit={e => {
@@ -220,65 +235,82 @@ function AssignmentPopup({ assignment, onClose, fetchAll }: {
   };
   return (
     <div className="assignment-popup">
-      <button className="close-btn" onClick={onClose}>Close</button>
-      <h2>{assignment.title}</h2>
-      <div>Deadline: {assignment.deadline}</div>
-      <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: progress + '%' }} />
-        <span>{progress}% complete</span>
-      </div>
-      <h3>Tasks</h3>
-      <button onClick={() => setShowTaskModal(true)}>+ New Task</button>
-      <ul className="task-list">
-        {tasks.map(task => (
-          <li key={task.id} className="task-item">
-            <div>
-              <b>{task.headline}</b> ({task.difficulty})<br />
-              {task.description}<br />
-              Status: <select value={task.status} onChange={e => updateTask(task.id, { status: e.target.value as any })}>
-                <option value="to do">To Do</option>
-                <option value="in progress">In Progress</option>
-                <option value="done">Done</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <button onClick={() => deleteTask(task.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      {showTaskModal && (
-        <TaskModal
-          onClose={() => setShowTaskModal(false)}
-          onCreate={addTask}
-        />
-      )}
-      <h3>Notes</h3>
-      <button onClick={() => setShowNoteModal(true)}>+ New Note</button>
-      <ul className="note-list">
-        {notes.map(note => (
-          <li key={note.id} className="note-item" onClick={() => setShowNote(note.id)}>
-            <b>{note.headline}</b>
-            <button onClick={e => { e.stopPropagation(); deleteNote(note.id); }}>Delete</button>
-          </li>
-        ))}
-      </ul>
-      {showNoteModal && (
-        <NoteModal
-          onClose={() => setShowNoteModal(false)}
-          onCreate={addNote}
-        />
-      )}
-      {showNote && (
-        <div className="note-popup">
-          <button className="close-btn" onClick={() => setShowNote(null)}>Close</button>
-          <h4>{notes.find(n => n.id === showNote)?.headline}</h4>
-          <textarea
-            value={notes.find(n => n.id === showNote)?.body || ''}
-            onChange={e => updateNote(showNote, { body: e.target.value })}
-            style={{ width: '100%', minHeight: 100 }}
-          />
+      <div className="assignment-popup-main">
+        <button className="close-btn" onClick={onClose}>Close</button>
+        <h2>{assignment.title}</h2>
+        <div>Deadline: {assignment.deadline}</div>
+        <div className="progress-bar-container">
+          <div className="progress-bar" style={{ width: progress + '%' }} />
+          <span>{progress}% complete</span>
         </div>
-      )}
+        <h3>Tasks</h3>
+        <button onClick={() => setShowTaskModal(true)}>+ New Task</button>
+        <ul className="task-list">
+          {tasks.map(task => (
+            <li
+              key={task.id}
+              className={`task-item task-${task.difficulty}`}
+              title={`${task.headline} (${task.difficulty}) - ${task.description}`}
+            >
+              <span className="task-status-icon">
+                {task.status === 'to do' && '⏳'}
+                {task.status === 'in progress' && '🔄'}
+                {task.status === 'done' && '✅'}
+                {task.status === 'rejected' && '❌'}
+              </span>
+              <span className="task-text">
+                <b>{task.headline}</b> ({task.difficulty}) - {task.description}
+              </span>
+              <span className="task-controls">
+                Status: <select value={task.status} onChange={e => updateTask(task.id, { status: e.target.value as any })}>
+                  <option value="to do">To Do</option>
+                  <option value="in progress">In Progress</option>
+                  <option value="done">Done</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <button onClick={() => deleteTask(task.id)} style={{ marginLeft: 8 }}>Delete</button>
+              </span>
+            </li>
+          ))}
+        </ul>
+        {showTaskModal && (
+          <TaskModal
+            onClose={() => setShowTaskModal(false)}
+            onCreate={addTask}
+          />
+        )}
+      </div>
+      <div className="assignment-popup-notes">
+        <h3>Notes</h3>
+        <button onClick={() => setShowNoteModal(true)}>+ New Note</button>
+        <ul className="note-list">
+          {notes.map(note => (
+            <li key={note.id} className="note-item" onClick={() => setShowNote(note.id)}>
+              <b>{note.headline}</b>
+              <button onClick={e => { e.stopPropagation(); deleteNote(note.id); }}>Delete</button>
+            </li>
+          ))}
+        </ul>
+        {showNoteModal && (
+          <NoteModal
+            onClose={() => setShowNoteModal(false)}
+            onCreate={addNote}
+          />
+        )}
+        {showNote && (
+          <div className="assignment-popup">
+            <div className="note-popup-header">
+              <h4 style={{ margin: 0 }}>{notes.find(n => n.id === showNote)?.headline}</h4>
+              <button className="close-btn" onClick={() => setShowNote(null)}>Close</button>
+            </div>
+            <textarea
+              value={notes.find(n => n.id === showNote)?.body || ''}
+              onChange={e => updateNote(showNote, { body: e.target.value })}
+              style={{ width: '100%', minHeight: 100 }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -288,7 +320,7 @@ function TaskModal({ onClose, onCreate }: { onClose: () => void; onCreate: (task
     { headline: '', description: '', difficulty: 'easy', status: 'to do' }
   );
   return (
-    <div className="assignment-popup">
+    <div className="side-popup">
       <button className="close-btn" onClick={onClose}>Close</button>
       <h2>Add Task</h2>
       <form onSubmit={e => { e.preventDefault(); onCreate(form); setForm({ headline: '', description: '', difficulty: 'easy', status: 'to do' }); }} className="task-form">
@@ -314,7 +346,7 @@ function TaskModal({ onClose, onCreate }: { onClose: () => void; onCreate: (task
 function NoteModal({ onClose, onCreate }: { onClose: () => void; onCreate: (note: Omit<AssignmentNote, 'id'>) => void }) {
   const [form, setForm] = useState({ headline: '', body: '' });
   return (
-    <div className="assignment-popup">
+    <div className="side-popup">
       <button className="close-btn" onClick={onClose}>Close</button>
       <h2>Add Note</h2>
       <form onSubmit={e => { e.preventDefault(); onCreate(form); setForm({ headline: '', body: '' }); }} className="note-form">
@@ -361,12 +393,20 @@ function App() {
     });
     fetchAll();
   };
+  const deleteCourse = async (id: string) => {
+    await fetch(`${API}/courses/${id}`, { method: 'DELETE' });
+    fetchAll();
+  };
+  const deleteAssignment = async (id: string) => {
+    await fetch(`${API}/assignments/${id}`, { method: 'DELETE' });
+    fetchAll();
+  };
 
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage courses={safeCourses} onAddCourse={addCourse} />} />
+        <Route path="/" element={<HomePage courses={safeCourses} onAddCourse={addCourse} onDeleteCourse={deleteCourse} />} />
         <Route
           path="/course/:id/assignments"
           element={
@@ -375,6 +415,7 @@ function App() {
               assignments={safeAssignments}
               fetchAll={fetchAll}
               onAddAssignment={addAssignment}
+              onDeleteAssignment={deleteAssignment}
             />
           }
         />
