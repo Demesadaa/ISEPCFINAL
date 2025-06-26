@@ -11,6 +11,7 @@ import './App.css';
 import { AuthProvider, useAuth } from './AuthContext';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
+import ProfilePage from './ProfilePage';
 
 // Types
 interface Task {
@@ -43,9 +44,16 @@ interface Course {
 const API = 'http://localhost:4000/api';
 
 function Navbar() {
+  const { user, logout } = useAuth();
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-logo">Academic Organizer</Link>
+      {user && (
+        <div className="navbar-actions">
+          <Link to="/profile" className="profile-link">👤 Profile</Link>
+          <button onClick={logout} className="logout-btn">🚪 Logout</button>
+        </div>
+      )}
     </nav>
   );
 }
@@ -423,12 +431,9 @@ function ProtectedApp() {
   return (
     <>
       <Navbar />
-      <div style={{ position: 'absolute', top: 16, right: 24 }}>
-        {user && <span style={{ color: '#A084E8', marginRight: 16 }}>Hi, {user}!</span>}
-        <button onClick={logout}>Logout</button>
-      </div>
       <Routes>
         <Route path="/" element={<HomePage courses={safeCourses} onAddCourse={addCourse} onDeleteCourse={deleteCourse} />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route
           path="/course/:id/assignments"
           element={

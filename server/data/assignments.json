@@ -93,11 +93,55 @@
     ]
   },
   {
-    "title": "qweqwe",
-    "deadline": "2025-07-12",
-    "courseId": "1750971391401",
-    "id": "1750971397196",
+    "title": "asdfasf",
+    "deadline": "2025-07-03",
+    "courseId": "1750971458857",
+    "id": "1750972212499",
     "completed": false,
-    "userId": "1750970507847"
+    "userId": "1750971438633",
+    "tasks": [
+      {
+        "headline": "sadasd",
+        "description": "asdasd",
+        "difficulty": "medium",
+        "status": "done",
+        "id": "1750972219404",
+        "userId": "1750971438633"
+      }
+    ],
+    "notes": [
+      {
+        "headline": "sdfsd",
+        "body": "sdfsdfsdf",
+        "id": "1750972223140",
+        "userId": "1750971438633"
+      }
+    ]
+  },
+  {
+    "title": "dasdasd",
+    "deadline": "2025-07-12",
+    "courseId": "1750972319929",
+    "id": "1750972933954",
+    "completed": false,
+    "userId": "1750970507847",
+    "tasks": [
+      {
+        "headline": "asdasd",
+        "description": "asdasd",
+        "difficulty": "medium",
+        "status": "done",
+        "id": "1750972941045",
+        "userId": "1750970507847"
+      }
+    ]
+  },
+  {
+    "title": "asdasd",
+    "deadline": "2025-07-12",
+    "courseId": "1750971458857",
+    "id": "1750973419196",
+    "completed": false,
+    "userId": "1750971438633"
   }
 ]

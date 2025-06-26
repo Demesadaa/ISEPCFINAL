@@ -9,6 +9,10 @@ import {
 } from './assignmentsController';
 import { getNotes, addNote, updateNote, deleteNote } from './notesController';
 import { getCourses, addCourse, updateCourse, deleteCourse } from './coursesController';
+import { 
+  getProfile, updateProfile, uploadAvatar, handleAvatarUpload, 
+  getAvatar, getStats 
+} from './profileController';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
@@ -66,6 +70,13 @@ app.get('/api/courses', authMiddleware, getCourses);
 app.post('/api/courses', authMiddleware, addCourse);
 app.put('/api/courses/:id', authMiddleware, updateCourse);
 app.delete('/api/courses/:id', authMiddleware, deleteCourse);
+
+// Profile routes
+app.get('/api/profile', authMiddleware, getProfile);
+app.put('/api/profile', authMiddleware, updateProfile);
+app.post('/api/profile/avatar', authMiddleware, uploadAvatar, handleAvatarUpload);
+app.get('/api/profile/avatar/:filename', getAvatar);
+app.get('/api/profile/stats', authMiddleware, getStats);
 
 // Register endpoint
 app.post('/api/register', (req: Request, res: Response): void => {

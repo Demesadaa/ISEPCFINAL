@@ -7,11 +7,25 @@
   {
     "id": "1750970507847",
     "username": "Demchika",
-    "passwordHash": "$2b$10$UoUKFvo3sJANYOCAtDD0CetikYHs4XhZ7/ddJGc0cY8iMQ/gHMni6"
+    "passwordHash": "$2b$10$UoUKFvo3sJANYOCAtDD0CetikYHs4XhZ7/ddJGc0cY8iMQ/gHMni6",
+    "profile": {
+      "backgroundColor": "#0e0c0c",
+      "accentColor": "#00c0f0",
+      "createdAt": "2025-06-26T21:20:31.470Z",
+      "updatedAt": "2025-06-26T21:26:07.695Z",
+      "avatar": "avatar_1750970507847_1750972888295.jpg"
+    }
   },
   {
     "id": "1750971438633",
     "username": "Datuna",
-    "passwordHash": "$2b$10$8k4U1TtcQof04pV2XTKulu9xEYMiFuCHLA/4hJsTiMNaM0SXzeBL."
+    "passwordHash": "$2b$10$8k4U1TtcQof04pV2XTKulu9xEYMiFuCHLA/4hJsTiMNaM0SXzeBL.",
+    "profile": {
+      "backgroundColor": "#070303",
+      "accentColor": "#80eb14",
+      "createdAt": "2025-06-26T21:29:42.571Z",
+      "updatedAt": "2025-06-26T21:30:01.723Z",
+      "avatar": "avatar_1750971438633_1750973390202.png"
+    }
   }
 ]

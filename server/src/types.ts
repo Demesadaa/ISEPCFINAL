@@ -2,6 +2,15 @@ export interface User {
   id: string;
   username: string;
   passwordHash: string;
+  profile?: UserProfile;
+}
+
+export interface UserProfile {
+  avatar?: string; // filename of uploaded avatar
+  backgroundColor: string; // hex color for background
+  accentColor: string; // hex color for accents/buttons
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Course {

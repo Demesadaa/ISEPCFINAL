@@ -14,6 +14,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [user, setUser] = useState<string | null>(() => localStorage.getItem('user'));
 
+  // Load user theme on initialization
+  useEffect(() => {
+    if (token) {
+      loadUserTheme();
+    }
+  }, [token]);
+
+  const loadUserTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const profile = await response.json();
+        if (profile.backgroundColor && profile.accentColor) {
+          document.documentElement.style.setProperty('--background-color', profile.backgroundColor);
+          document.documentElement.style.setProperty('--accent-color', profile.accentColor);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user theme:', error);
+    }
+  };
+
   useEffect(() => {
     if (token) localStorage.setItem('token', token);
     else localStorage.removeItem('token');
@@ -31,6 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await res.json();
       setToken(data.token);
       setUser(username);
+      // Load theme after login
+      setTimeout(() => loadUserTheme(), 100);
       return true;
     }
     return false;
@@ -46,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await res.json();
       setToken(data.token);
       setUser(username);
+      // Load theme after registration
+      setTimeout(() => loadUserTheme(), 100);
       return true;
     }
     return false;
@@ -56,6 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    // Reset to default theme
+    document.documentElement.style.setProperty('--background-color', '#111111');
+    document.documentElement.style.setProperty('--accent-color', '#A084E8');
   };
 
   return (
