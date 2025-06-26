@@ -1,7 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import { getAssignments, addAssignment, updateAssignment, deleteAssignment } from './assignmentsController';
+import {
+  getAssignments, addAssignment, updateAssignment, deleteAssignment,
+  getTasks, addTask, updateTask, deleteTask,
+  getAssignmentNotes, addAssignmentNote, updateAssignmentNote, deleteAssignmentNote,
+  getAssignmentProgress
+} from './assignmentsController';
 import { getNotes, addNote, updateNote, deleteNote } from './notesController';
 import { getCourses, addCourse, updateCourse, deleteCourse } from './coursesController';
 
@@ -16,6 +21,21 @@ app.get('/api/assignments', getAssignments);
 app.post('/api/assignments', addAssignment);
 app.put('/api/assignments/:id', updateAssignment);
 app.delete('/api/assignments/:id', deleteAssignment);
+
+// Assignment task routes
+app.get('/api/assignments/:assignmentId/tasks', getTasks);
+app.post('/api/assignments/:assignmentId/tasks', addTask);
+app.put('/api/assignments/:assignmentId/tasks/:taskId', updateTask);
+app.delete('/api/assignments/:assignmentId/tasks/:taskId', deleteTask);
+
+// Assignment note routes
+app.get('/api/assignments/:assignmentId/notes', getAssignmentNotes);
+app.post('/api/assignments/:assignmentId/notes', addAssignmentNote);
+app.put('/api/assignments/:assignmentId/notes/:noteId', updateAssignmentNote);
+app.delete('/api/assignments/:assignmentId/notes/:noteId', deleteAssignmentNote);
+
+// Assignment progress
+app.get('/api/assignments/:assignmentId/progress', getAssignmentProgress);
 
 // Note routes
 app.get('/api/notes', getNotes);

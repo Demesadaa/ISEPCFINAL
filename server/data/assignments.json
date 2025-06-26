@@ -4,20 +4,74 @@
     "deadline": "22222-11-12",
     "courseId": "1750963013466",
     "id": "1750963030308",
-    "completed": false
+    "completed": false,
+    "tasks": [],
+    "notes": []
   },
   {
     "title": "alo",
     "deadline": "2222-02-22",
     "courseId": "1750963195653",
     "id": "1750963223212",
-    "completed": false
+    "completed": false,
+    "tasks": [],
+    "notes": []
   },
   {
     "title": "ddada2",
     "deadline": "0002-02-22",
     "courseId": "1750963195653",
     "id": "1750963325182",
+    "completed": false,
+    "tasks": [],
+    "notes": []
+  },
+  {
+    "title": "asdasd",
+    "deadline": "4222-12-23",
+    "courseId": "1750963202969",
+    "id": "1750964983655",
+    "completed": false,
+    "tasks": [],
+    "notes": []
+  },
+  {
+    "title": "asdas",
+    "deadline": "4214-12-23",
+    "courseId": "1750963013466",
+    "id": "1750965113234",
+    "completed": false,
+    "tasks": [],
+    "notes": []
+  },
+  {
+    "title": "asA",
+    "deadline": "2025-12-21",
+    "courseId": "1750963013466",
+    "id": "1750966715431",
     "completed": false
+  },
+  {
+    "title": "sadasd",
+    "deadline": "2025-12-20",
+    "courseId": "1750963013466",
+    "id": "1750967083280",
+    "completed": false,
+    "tasks": [
+      {
+        "headline": "ASDASD",
+        "description": "ASDAS",
+        "difficulty": "easy",
+        "status": "to do",
+        "id": "1750967231939"
+      }
+    ],
+    "notes": [
+      {
+        "headline": "Note 1",
+        "body": "asdass \n",
+        "id": "1750967137466"
+      }
+    ]
   }
 ]
